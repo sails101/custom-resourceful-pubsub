@@ -1,0 +1,50 @@
+<div ng-app="PetshopLive" ng-controller="AppCtrl">
+  <h1>It's like a petshop, but live</h1>
+
+  <h5>here's where the pets go:</h5>
+  <ul>
+    <li ng-repeat="pet in pets">
+      <span>{{pet.name}}</span>
+      <em ng-show="pet.hasBarked">(this one's a barker)</em>
+    </li>
+  </ul>
+</div>
+
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular.min.js"></script>
+<script type="text/javascript">
+angular.module('PetshopLive', []);
+
+
+angular.module('PetshopLive').controller('AppCtrl', function ($scope, $http) {
+
+  // Instead of AJAX, we'll do sockets so we can get the realtime juice
+  io.socket.get('/pets/all', function (data) {
+    $scope.pets = data;
+
+    // Re-render the DOM
+    $scope.$apply();
+  });
+
+  // Listen for changes to pets
+  io.socket.on('pet', function (socketEvent){
+    console.log('Something happened with a pet.');
+    console.log(socketEvent);
+
+
+    // Find the pet who barked and update that in the UI.
+    _.each($scope.pets, function ($pet){
+
+      // I'm casting these ids to integers
+      // (if I was using string primary key values, like in mongo, I wouldn't)
+      if (+$pet.id === +socketEvent.id) {
+        $pet.hasBarked = true;
+      }
+    });
+
+    // Re-render the DOM
+    $scope.$apply();
+  });
+
+});
+</script>
