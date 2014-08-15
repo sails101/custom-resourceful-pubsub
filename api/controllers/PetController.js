@@ -40,6 +40,13 @@ module.exports = {
     })
     .exec(function (err) {
       if (err) return res.negotiate(err);
+      // looks at err.status and calls either:
+      //   • res.badRequest()
+      //   • res.serverError()
+      //   • res.notFound()
+      //   • res.forbidden()
+      //
+      // (see http://sailsjs.org/#/documentation/reference/res/res.negotiate.html)
 
       // Let everyone know that this particular pet has barked.
       Pet.publishUpdate(req.param('id'), {
